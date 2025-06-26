@@ -1,41 +1,27 @@
-# frozen_string_literal: true
-
 cask "kuaishou-kim" do
-  version "5.0.2,59105"
+  arch arm: "-arm"
 
-  on_arm do
-    sha256 "2b033079b42b9393b17a83251b96ac58aa89733f13047da8caafb8ddbbd6eeb5"
+  version "5.0.3,59346"
+  sha256 arm:   "6a846a11a92a3e0be04a7acf015c176b6206ff5f44352e41989b8dc11e829924",
+         intel: "f8bdc88c92efed5ece0ac90e648b8501661aff7c1d48f35e941f366590100dc8"
 
-    url "https://kim.static.yximgs.com/udata/pkg/kim-install/Kim-#{version.csv.first}-#{version.csv.second}-arm.dmg",
-        verified: "kim.static.yximgs.com/udata/pkg/kim-install/"
-  end
-  on_intel do
-    sha256 "a19f41005f5c8495f298b1e2ad1d078117314d78aff114da20103c9ff00a9959"
-
-    url "https://kim.static.yximgs.com/udata/pkg/kim-install/Kim-#{version.csv.first}-#{version.csv.second}.dmg",
-        verified: "kim.static.yximgs.com/udata/pkg/kim-install/"
-  end
-
+  url "https://kim.static.yximgs.com/udata/pkg/kim-install/Kim-#{version.csv.first}-#{version.csv.second}#{arch}.dmg",
+      verified: "kim.static.yximgs.com/udata/pkg/kim-install/"
   name "Kim"
   desc "Empower Efficiency with Collaboration"
   homepage "https://kim.kuaishou.com/"
 
   livecheck do
-    url do
-      on_intel do
-        "https://kim.kuaishou.com/mis/deploy/version/v2/appDownloadUrl?type=darwin"
-      end
-      on_arm do
-        "https://kim.kuaishou.com/mis/deploy/version/v2/appDownloadUrl?type=darwin-arm"
-      end
-    end
+    url "https://kim.kuaishou.com/mis/deploy/version/v2/appDownloadUrl?type=darwin#{arch}"
+    regex(/Kim[._-](\d+(?:\.\d+)+)[._-](\d+)(?:-arm)?\.dmg/i)
+    strategy :json do |json, regex|
+      json.map do |_|
+        url = json.dig("data", "format")
+        match = url&.match(regex)
+        next if match.nil?
 
-    strategy :json do |json|
-      url = json.dig("data", "format")
-      match = url&.match(/Kim-(\d+(?:\.\d+)+)-(\d+)(?:-arm)?\.dmg/i)
-      next if match.nil?
-
-      "#{match[1]},#{match[2]}"
+        "#{match[1]},#{match[2]}"
+      end
     end
   end
 
