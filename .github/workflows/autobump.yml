@@ -1,0 +1,32 @@
+name: Bump formulae on schedule or request
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/autobump.yml
+  schedule:
+    # Daily at midnight
+    - cron: "0 0 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  autobump:
+    if: github.repository_owner == 'Omico'
+    runs-on: macos-latest
+    steps:
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+
+      - name: Configure Git user
+        uses: Homebrew/actions/git-user-config@main
+
+      - name: Bump packages
+        uses: Homebrew/actions/bump-packages@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fork: false
